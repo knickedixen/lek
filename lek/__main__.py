@@ -1,20 +1,14 @@
+from lek import *
 import os
 import atexit
 import termios
 import sys
-from lek import *
-#from lek import screen
-#from lek import editor
-#from lek import file
-#from lek import editorstate
 
-#def run():
 screen.setup()
-
 state = editorstate.EditorState()
 editor.setup(state)
 
-if len(sys.argv) > 1:
+if len(sys.argv) > 0:
     filePath = sys.argv[1]
     if os.path.isfile(filePath):
         file.openFile(filePath, state)
@@ -27,5 +21,4 @@ try:
 finally:
     screen.reset()
 
-#run()
 
