@@ -6,10 +6,6 @@ import atexit
 import re
 import math
 
-class Const:
-    rightBreak = 3
-    leftBreak = 5
-
 class VT:
     clear = b'\x1b[J'
     resetPos = b'\x1b[H'
@@ -58,7 +54,7 @@ def refreshScreen(state):
     dashLine = "-" * state.windowX + "\n\r"
     
     screenStr = ""
-    screenStr += dashLine # first line is untouchable?
+    screenStr += dashLine # TODO first line is untouchable? just putting a line for now...
     
     offset = 6
     pageSize = state.windowX - offset
