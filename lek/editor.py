@@ -89,12 +89,14 @@ def handleCommandMode(state):
     match state.key:
         case Chars.carriageReturn | Chars.newLine:
             commitCommandMode(state)
+        case Chars.delete:
+            state.commandInput = "" # TODO
         case Chars.backspace:
             state.commandInput = "" # TODO
         case Chars.ctrlQ:
-            exit(0)
+            quit(state)
         case _:
-            if ord(state.key) < 31:
+            if len(state.key) > 1 or ord(state.key) < 31 or ord(state.key) > 126:
                 # Skip all other control characters
                 return
             translatedKey = state.key.decode("utf-8")
@@ -137,14 +139,11 @@ def processKeypress(state):
             exitSelectMode(state)
             cursorRight(state)
         case Chars.ctrlS:
-            if state.filePath:
-                file.saveFile(state)
-            else:
-                enterCommandMode(Command.saveAs, state)
+            save(state)
         case Chars.ctrlO:
             enterCommandMode(Command.open, state)
         case Chars.ctrlQ:
-            exit(0)
+            quit(state)
         case Chars.carriageReturn | Chars.newLine:
             newLine(state)
         case Chars.delete:
@@ -176,15 +175,22 @@ def processKeypress(state):
             enterSelectMode(state)
             home(state)
             return
-        case Chars.pageUp | Chars.pageDown | Chars.insert:
-            # crash on purpose
-            print(state.cursorX[2])
         case _:
-            if ord(state.key) < 31:
+            if len(state.key) > 1 or ord(state.key) < 31 or ord(state.key) > 126:
                 # Skip all other control characters
                 return
             translatedKey = state.key.decode("utf-8")
             appendAtCursor(translatedKey, state)
+
+def quit(state):
+    # TODO check if file is saved
+    exit(0)
+
+def save(state):
+    if state.filePath:
+        file.saveFile(state)
+    else:
+        enterCommandMode(Command.saveAs, state)
 
 def newLine(state):
     line = state.rows[state.cursorY].chars
@@ -198,6 +204,9 @@ def newLine(state):
     cursorDown(state)
 
 def delete(state):
+    if state.selectMode:
+        deleteSelected(state)
+        return
     if state.cursorX == state.rows[state.cursorY].length and state.cursorY < len(state.rows) - 1:
         nextRow = state.rows.pop(state.cursorY + 1)
         state.rows[state.cursorY].chars += nextRow.chars
@@ -211,13 +220,13 @@ def delete(state):
 def deleteSelected(state):
     selectStartY = min(state.selectStartY, state.cursorY)
     selectStopY = max(state.selectStartY, state.cursorY)
+
     if state.selectStartY < state.cursorY:
         selectStartX = state.selectStartX
         selectStopX = state.cursorX
     elif state.selectStartY == state.cursorY:
         selectStartX = min(state.selectStartX, state.cursorX)
         selectStopX = max(state.selectStartX, state.cursorX)
-        selectStopX += len(bg)
     else:
         selectStartX = state.cursorX
         selectStopX = state.selectStartX
@@ -258,6 +267,8 @@ def backspace(state):
         cursorLeft(state)
 
 def appendAtCursor(key, state):
+    if state.selectMode:
+        deleteSelected(state)
     line = state.rows[state.cursorY].chars
     newLine = line[:state.cursorX] + key + line[state.cursorX:]
     state.rows[state.cursorY].chars = newLine
