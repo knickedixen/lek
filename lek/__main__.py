@@ -8,7 +8,7 @@ screen.setup()
 state = editorstate.EditorState()
 editor.setup(state)
 
-if len(sys.argv) > 0:
+if len(sys.argv) > 1:
     filePath = sys.argv[1]
     if os.path.isfile(filePath):
         file.openFile(filePath, state)
