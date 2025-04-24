@@ -1,2 +1,2 @@
-# lek
-Terminal text editor written in Python.
+# Lek Text editor
+Terminal text editor written in Python for fun.
